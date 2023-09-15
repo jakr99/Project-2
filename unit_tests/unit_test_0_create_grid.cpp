@@ -1,13 +1,8 @@
 #include "puzzle.h"
 #include "test_utils.hpp"
-//#include <ctime>
-//#include <stdlib.h>
 
 int main(const int argc, const char **argv) {
   return test_wrapper(argc, argv, []() {
-    // time_t seed;
-    // srand(time(&seed));
-
     int rows = 1000, cols = 1000;
     Puzzle p;
 

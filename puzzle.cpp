@@ -1,73 +1,61 @@
 #include "puzzle.h"
+#include <cstring>
 #include <iostream>
 using namespace std;
 
-/*  FOR REFERENCE ONLY. DO NOT UNCOMMENT
-class Puzzle {
-
-private:
-  int rows, cols;
-  char **symbols;
-
-public:
-  Puzzle() : rows(0), cols(0), symbols(nullptr) {}
-
-  char **grid() { return symbols; }
-  const int &get_rows() const { return rows; }
-  const int &get_cols() const { return cols; }
-
-  void create_grid(int rows, int cols);
-  void fill_grid();
-  void delete_grid();
-  void print_grid() const;
-  void shift_row(int row, bool reverse = false);
-  void shift_col(int col, bool reverse = false);
-  ...
-}
-*/
-
-/*
-Purpose: turn symbols into r-by-c dynamic char array, and set members rows/cols accordingly
-Tested by: unit_tests/unit_test_0
-Post-conditions:
-  - symbols points to r-by-c dynamic array
-  - rows == r
-  - cols == c
-*/
 void Puzzle::create_grid(int r, int c) {
+  delete_grid();
 
+  rows = r;
+  cols = c;
+
+  symbols = new char *[rows];
+  for (int i = 0; i < rows; ++i) {
+    symbols[i] = new char[cols];
+  }
 }
 
-/*
-Purpose: de-allocates symbols
-Tested by: mem_tests
-*/
 void Puzzle::delete_grid() {
+  if (symbols != nullptr) {
+    for (int i = 0; i < rows; ++i) {
+      delete[] symbols[i];
+    }
+    delete[] symbols;
+    symbols = nullptr;
+  }
 
+  rows = 0;
+  cols = 0;
 }
 
-/*
-Purpose: shifts a row of symbols (right if reverse = false, left if reverse =
-true), wrapping the furthest symbol around Tested by: unit_tests/unit_test_1-3
-*/
 void Puzzle::shift_row(int row, bool reverse) {
+  char *temp = new char[cols];
+  memcpy(temp, symbols[row], cols * sizeof(char));
 
+  for (int i = 0; i < cols; ++i) {
+    int newPos = reverse ? (i - 1 + cols) % cols : (i + 1) % cols;
+    newPos = (newPos + cols) % cols;
+    symbols[row][newPos] = temp[i];
+  }
+
+  delete[] temp;
 }
 
-/*
-Purpose: shifts a column of symbols (down if reverse = false, up if reverse =
-true), wrapping the furthest symbol around Tested by: unit_tests/unit_test_4-6
-*/
 void Puzzle::shift_col(int col, bool reverse) {
+  char *temp = new char[rows];
+  for (int i = 0; i < rows; ++i) {
+    temp[i] = symbols[i][col];
+  }
 
+  for (int i = 0; i < rows; ++i) {
+    int newPos = reverse ? (i - 1 + rows) % rows : (i + 1) % rows;
+    newPos = (newPos + rows) % rows;
+    symbols[newPos][col] = temp[i];
+  }
+
+  delete[] temp;
 }
 
-// These functions are given to you, no need to change them
-
-/*
-Purpose: Read in symbols to initialize puzzle
-PROVIDED FOR YOU, no need to change
-*/
 void Puzzle::fill_grid() {
   for (int i = 0; i < rows; i++) {
     for (int j = 0; j < cols; j++) {
@@ -76,10 +64,6 @@ void Puzzle::fill_grid() {
   }
 }
 
-/*
-Purpose: Print contents of puzzle
-PROVIDED FOR YOU, no need to change
-*/
 void Puzzle::print_grid() const {
   for (int i = 0; i < rows; i++) {
     for (int j = 0; j < cols; j++)
@@ -89,11 +73,10 @@ void Puzzle::print_grid() const {
   cout << endl;
 }
 
-
-// Default Member Functions
-
 const Puzzle &Puzzle::operator=(const Puzzle &rhs) {
-// Performs a deep-copy of a Puzzle object
+  if (this == &rhs) {
+    return *this;
+  }
 
   delete_grid();
   create_grid(rhs.rows, rhs.cols);
@@ -105,14 +88,8 @@ const Puzzle &Puzzle::operator=(const Puzzle &rhs) {
 }
 
 Puzzle::Puzzle(const Puzzle &source) {
-
   symbols = nullptr;
-  *this = source;  // invokes operator=
+  *this = source;
 }
 
-Puzzle::~Puzzle() {
-// De-allocates dynamic member variables
-
-  if (symbols != nullptr)
-    delete_grid();
-}
+Puzzle::~Puzzle() { delete_grid(); }
